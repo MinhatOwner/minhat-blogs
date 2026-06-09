@@ -3,10 +3,10 @@ home: true
 layout: Blog
 icon: house
 title: 博客主页
-heroImage: https://theme-hope-assets.vuejs.press/logo.svg
-heroText: 你博客的名称
+heroImage: /logo-white.svg
+heroText: Minhat博客
 heroFullScreen: true
-tagline: 你可以在这里放置你的口号与标语
+tagline: 人生就像蒲公英，看起来自由，却身不由己！
 projects:
   - icon: folder-open
     name: 项目名称
@@ -33,7 +33,7 @@ projects:
     desc: 伙伴详细介绍
     link: https://你的伙伴链接
 
-  - icon: https://theme-hope-assets.vuejs.press/logo.svg
+  - icon: /logo-black.svg
     name: 自定义项目
     desc: 自定义详细介绍
     link: https://你的自定义链接
