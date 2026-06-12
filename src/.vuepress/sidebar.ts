@@ -11,6 +11,13 @@ export default sidebar({
             children: "structure",
         },
         {
+            text: "AI",
+            icon: "laptop-code",
+            prefix: "ai/",
+            link: "/ai/",
+            children: "structure",
+        },
+        {
             text: "如何使用",
             icon: "laptop-code",
             prefix: "demo/",

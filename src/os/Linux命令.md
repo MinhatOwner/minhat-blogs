@@ -2,7 +2,7 @@
 # 文章标题，默认取第一个 h1
 title: Linux命令
 # 短标题，导航栏/侧边栏优先显示
-shortTitle: Linux命令22
+shortTitle: Linux命令
 # 文章描述
 description: 文章描述
 # 页面图标 (FontClass 或图片路径)
@@ -20,6 +20,10 @@ category:
 tag:
   - Linux
 ---
+
+这是文章摘要
+
+<!-- more -->
 
 ## upower（查看电池状态）
 
