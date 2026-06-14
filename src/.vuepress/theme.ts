@@ -4,6 +4,10 @@ import navbar from "./navbar.js";
 import sidebar from "./sidebar.js";
 // 主题配置
 export default hopeTheme({
+    // 自定义 TOC 标题
+    toc:{
+        levels: [1, 6]
+    },
     // ================主题配置-主题基本选项================
     // 当前网站部署到的域名。
     hostname: "https://minhat.cn",
