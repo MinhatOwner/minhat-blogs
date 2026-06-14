@@ -18,6 +18,13 @@ export default sidebar({
             children: "structure",
         },
         {
+            text: "其它",
+            icon: "laptop-code",
+            prefix: "other/",
+            link: "/other/",
+            children: "structure",
+        },
+        {
             text: "如何使用",
             icon: "laptop-code",
             prefix: "demo/",
