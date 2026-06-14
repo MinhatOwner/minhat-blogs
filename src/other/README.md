@@ -1,7 +1,7 @@
 ---
 title: 其它
 index: false
-icon: laptop-code
+icon: iconamoon:apps-thin
 category:
   - 使用指南
 ---

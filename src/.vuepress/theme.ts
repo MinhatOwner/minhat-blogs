@@ -26,7 +26,7 @@ export default hopeTheme({
         // 博主姓名
         name: "Minhat",
         // 口号、座右铭或介绍语。
-        description: "一个Java后端开发者",
+        description: "人生就像蒲公英，看起来自由，却身不由己！",
         // 博主的个人介绍地址
         intro: "/intro.html",
         // 博主的媒体链接配置
@@ -37,32 +37,6 @@ export default hopeTheme({
             Bitbucket: "https://example.com",
             Dingding: "https://example.com",
             Discord: "https://example.com",
-            Dribbble: "https://example.com",
-            Email: "mailto:info@example.com",
-            Evernote: "https://example.com",
-            Facebook: "https://example.com",
-            Flipboard: "https://example.com",
-            Gitee: "https://example.com",
-            GitHub: "https://example.com",
-            Gitlab: "https://example.com",
-            Gmail: "mailto:info@example.com",
-            Instagram: "https://example.com",
-            Lark: "https://example.com",
-            Lines: "https://example.com",
-            Linkedin: "https://example.com",
-            Pinterest: "https://example.com",
-            Pocket: "https://example.com",
-            QQ: "https://example.com",
-            Qzone: "https://example.com",
-            Reddit: "https://example.com",
-            Rss: "https://example.com",
-            Steam: "https://example.com",
-            Twitter: "https://example.com",
-            Wechat: "https://example.com",
-            Weibo: "https://example.com",
-            Whatsapp: "https://example.com",
-            Youtube: "https://example.com",
-            Zhihu: "https://example.com",
             VuePressThemeHope: {
                 icon: "https://theme-hope-assets.vuejs.press/logo.svg",
                 link: "https://theme-hope.vuejs.press",
@@ -92,7 +66,7 @@ export default hopeTheme({
     // 侧边栏配置
     sidebar,
     // 页脚的默认内容，可输入 HTMLString
-    footer: "默认页脚",
+    footer: "Powered by VuePress-Theme-Hope",
     // 是否默认显示页脚
     displayFooter: true,
     // ================主题配置-主题外观选项================

@@ -1,7 +1,7 @@
 ---
 title: AI
 index: false
-icon: laptop-code
+icon: tdesign:ai-1
 category:
   - 使用指南
 ---

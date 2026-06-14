@@ -1,7 +1,7 @@
 ---
 title: SpecKit快速入门
 description: 文章描述
-icon: clarity:command-line
+icon: mi:document
 author: Minhat
 isOriginal: true
 date: 2026-06-12

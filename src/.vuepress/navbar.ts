@@ -77,6 +77,10 @@ export default navbar([
                         text: "冰河技术",
                         link: "https://binghe.gitcode.host",
                     },
+                    {
+                        text: "iconify",
+                        link: "https://iconify.design",
+                    },
                 ]
             }
         ]
