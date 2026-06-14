@@ -79,6 +79,8 @@ export default hopeTheme({
     navbar,
     // 导航栏图标，应为基于 .vuepress/public 文件夹的绝对路径。
     logo: "/logo-black.svg",
+    // 导航栏图标(深色)
+    logoDark: "/logo-white.svg",
     // 仓库配置，用于在导航栏中显示仓库链接。
     repo: "https://gitee.com/minhat",
     // 文档在仓库中的目录

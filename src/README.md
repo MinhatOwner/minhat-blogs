@@ -1,11 +1,14 @@
 ---
+# 主页
 home: true
 layout: Blog
 icon: house
 title: 博客主页
 heroImage: /logo-white.svg
-heroText: Minhat博客
+# 设置主标题
+heroText: Minhat 博客
 heroFullScreen: true
+# 置副标题
 tagline: 人生就像蒲公英，看起来自由，却身不由己！
 projects:
   - icon: folder-open

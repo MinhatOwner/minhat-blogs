@@ -7,7 +7,7 @@ export default defineUserConfig({
     // 站点的语言
     lang: "zh-CN",
     // 站点的标题
-    title: "Minhat博客",
+    title: "Minhat 博客",
     // 站点的描述
     // 它将会在最终渲染出的 HTML 中作为 <meta name="description" /> 标签的 content 属性。
     // 它会被每个页面的 Frontmatter 中的 description 字段覆盖。
