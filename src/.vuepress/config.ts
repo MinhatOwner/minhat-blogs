@@ -14,6 +14,14 @@ export default defineUserConfig({
     description: "vuepress-theme-hope 的博客演示",
     // 设置站点要使用的主题
     theme,
+    // 指定 vuepress build 命令的输出目录
+    dest: "dist",
+    // 指定临时文件目录
+    temp: ".temp",
+    // 指定缓存文件目录
+    cache: ".cache",
+    // 指定 Public 文件目
+    public: "public",
     // 和 PWA 一起启用
     // shouldPrefetch: false,
 });
