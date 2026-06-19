@@ -1,0 +1,1307 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JVM运行时动画解析 - 003</title>
+    <style>
+        :root {
+            /* 主题主色 */
+            --ui-primary: #009688;
+            --ui-primary-light: #e6f7f5;
+            --ui-primary-dark: #007d70;
+            /* 功能色 */
+            --ui-success: #5fb878;
+            --ui-warning: #ffb800;
+            --ui-danger: #ff5722;
+            --ui-info: #8799a3;
+            /* 中性色 */
+            --ui-bg-page: #f2f2f2;
+            --ui-bg-card: #ffffff;
+            --ui-border: #e6e6e6;
+            --ui-border-dark: #d2d2d2;
+            --ui-text-title: #333333;
+            --ui-text-default: #666666;
+            --ui-text-aux: #999999;
+            /* 间距 */
+            --ui-space-xs: 4px;
+            --ui-space-sm: 8px;
+            --ui-space-md: 12px;
+            --ui-space-lg: 16px;
+            --ui-space-xl: 24px;
+            /* 圆角 */
+            --ui-radius-none: 0px;
+            --ui-radius-sm: 2px;
+            --ui-radius-md: 4px;
+            /* 阴影 */
+            --ui-shadow-none: none;
+            --ui-shadow-sm: 0 1px 3px rgba(0,0,0,0.08);
+            --ui-shadow-md: 0 2px 8px rgba(0,0,0,0.1);
+            /* 字体 */
+            --ui-font-min: 12px;
+            --ui-font-default: 14px;
+            --ui-font-title: 16px;
+            --ui-font-big: 18px;
+            --ui-font-family: "Microsoft YaHei", Helvetica Neue, Helvetica, Arial, sans-serif;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--ui-font-family);
+            background-color: var(--ui-bg-page);
+            color: var(--ui-text-default);
+            font-size: var(--ui-font-default);
+            line-height: 1.6;
+            padding: var(--ui-space-xl);
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background-color: var(--ui-bg-card);
+            padding: var(--ui-space-lg);
+            border-radius: var(--ui-radius-md);
+            box-shadow: var(--ui-shadow-md);
+            margin-bottom: var(--ui-space-xl);
+        }
+
+        .header h1 {
+            font-size: var(--ui-font-big);
+            color: var(--ui-text-title);
+            font-weight: 500;
+            margin-bottom: var(--ui-space-sm);
+        }
+
+        .header .subtitle {
+            color: var(--ui-text-aux);
+            font-size: var(--ui-font-min);
+        }
+
+        .code-section {
+            background-color: var(--ui-bg-card);
+            padding: var(--ui-space-md);
+            border-radius: var(--ui-radius-md);
+            box-shadow: var(--ui-shadow-md);
+            margin-bottom: var(--ui-space-xl);
+        }
+
+        .code-section h2 {
+            font-size: var(--ui-font-title);
+            color: var(--ui-text-title);
+            font-weight: 500;
+            margin-bottom: var(--ui-space-md);
+        }
+
+        .code-block {
+            background-color: #282c34;
+            color: #abb2bf;
+            padding: var(--ui-space-md);
+            border-radius: var(--ui-radius-sm);
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: var(--ui-font-default);
+            line-height: 1.8;
+        }
+
+        .code-block .keyword { color: #c678dd; }
+        .code-block .type { color: #e5c07b; }
+        .code-block .variable { color: #e06c75; }
+        .code-block .number { color: #d19a66; }
+        .code-block .operator { color: #56b6c2; }
+        .code-block .comment { color: #5c6370; font-style: italic; }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--ui-space-xl);
+            margin-bottom: var(--ui-space-xl);
+        }
+
+        .panel {
+            background-color: var(--ui-bg-card);
+            padding: var(--ui-space-lg);
+            border-radius: var(--ui-radius-md);
+            box-shadow: var(--ui-shadow-md);
+        }
+
+        .panel h2 {
+            font-size: var(--ui-font-title);
+            color: var(--ui-text-title);
+            font-weight: 500;
+            margin-bottom: var(--ui-space-md);
+            padding-bottom: var(--ui-space-sm);
+            border-bottom: 1px solid var(--ui-border);
+        }
+
+        /* PC寄存器样式 */
+        .pc-register-area { margin-bottom: var(--ui-space-lg); }
+
+        .pc-register-display {
+            background-color: var(--ui-primary-light);
+            border: 2px solid var(--ui-primary);
+            border-radius: var(--ui-radius-md);
+            padding: var(--ui-space-md);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: all 0.3s ease;
+        }
+
+        .pc-register-display.active {
+            box-shadow: 0 0 0 3px rgba(0, 150, 136, 0.2);
+            animation: pcPulse 1s ease-in-out;
+        }
+
+        @keyframes pcPulse {
+            0%, 100% { box-shadow: 0 0 0 3px rgba(0, 150, 136, 0.2); }
+            50% { box-shadow: 0 0 0 5px rgba(0, 150, 136, 0.4); }
+        }
+
+        .pc-label {
+            display: flex;
+            align-items: center;
+            gap: var(--ui-space-sm);
+            color: var(--ui-primary-dark);
+            font-weight: 500;
+            font-size: var(--ui-font-default);
+        }
+
+        .pc-icon {
+            width: 20px;
+            height: 20px;
+            background-color: var(--ui-primary);
+            border-radius: 50%;
+            position: relative;
+        }
+
+        .pc-icon::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 8px;
+            height: 8px;
+            background-color: white;
+            border-radius: 50%;
+        }
+
+        .pc-value-container {
+            display: flex;
+            align-items: center;
+            gap: var(--ui-space-md);
+        }
+
+        .pc-value {
+            background-color: var(--ui-primary);
+            color: white;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: var(--ui-font-title);
+            font-weight: 500;
+            padding: var(--ui-space-sm) var(--ui-space-md);
+            border-radius: var(--ui-radius-sm);
+            min-width: 40px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .pc-value.highlight {
+            transform: scale(1.1);
+            box-shadow: 0 2px 8px rgba(0, 150, 136, 0.3);
+        }
+
+        .pc-description {
+            color: var(--ui-text-default);
+            font-size: var(--ui-font-min);
+            font-family: 'Consolas', 'Monaco', monospace;
+        }
+
+        .bytecode-list { list-style: none; }
+
+        .bytecode-item {
+            padding: var(--ui-space-sm) var(--ui-space-md);
+            margin-bottom: var(--ui-space-xs);
+            border-radius: var(--ui-radius-sm);
+            background-color: var(--ui-bg-page);
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: var(--ui-font-default);
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+        }
+
+        .bytecode-item:hover {
+            background-color: var(--ui-border);
+            transform: translateX(2px);
+        }
+
+        .bytecode-item.active {
+            background-color: var(--ui-primary-light);
+            color: var(--ui-primary-dark);
+            font-weight: 500;
+            border-left: 3px solid var(--ui-primary);
+        }
+
+        .bytecode-item.executed {
+            background-color: #f0f9f4;
+            color: var(--ui-success);
+        }
+
+        .bytecode-item .index {
+            color: var(--ui-text-aux);
+            margin-right: var(--ui-space-md);
+            min-width: 20px;
+        }
+
+        .bytecode-item .instruction {
+            color: var(--ui-text-title);
+            font-weight: 500;
+            min-width: 120px;
+        }
+
+        .bytecode-item .instruction-desc {
+            color: var(--ui-text-aux);
+            font-size: var(--ui-font-min);
+            margin-left: auto;
+            padding-left: var(--ui-space-md);
+            opacity: 0.8;
+        }
+
+        .bytecode-item:hover .instruction-desc {
+            opacity: 1;
+            color: var(--ui-text-default);
+        }
+
+        .bytecode-item.active .instruction-desc {
+            color: var(--ui-primary);
+            opacity: 1;
+        }
+
+        .jvm-visualization {
+            display: flex;
+            flex-direction: column;
+            gap: var(--ui-space-lg);
+        }
+
+        .stack-area, .local-variable-area {
+            border: 1px solid var(--ui-border);
+            border-radius: var(--ui-radius-md);
+            padding: var(--ui-space-md);
+            background-color: var(--ui-bg-page);
+        }
+
+        .area-title {
+            font-size: var(--ui-font-default);
+            color: var(--ui-text-title);
+            font-weight: 500;
+            margin-bottom: var(--ui-space-sm);
+            display: flex;
+            align-items: center;
+            gap: var(--ui-space-sm);
+        }
+
+        .area-title .icon {
+            width: 16px;
+            height: 16px;
+            background-color: var(--ui-primary);
+            border-radius: 50%;
+        }
+
+        .stack-depth-indicator {
+            margin-left: auto;
+            display: flex;
+            align-items: center;
+            gap: var(--ui-space-xs);
+            background-color: var(--ui-bg-page);
+            padding: var(--ui-space-xs) var(--ui-space-sm);
+            border-radius: var(--ui-radius-sm);
+            border: 1px solid var(--ui-border);
+        }
+
+        .depth-label {
+            color: var(--ui-text-aux);
+            font-size: var(--ui-font-min);
+        }
+
+        .depth-value {
+            color: var(--ui-primary-dark);
+            font-weight: 500;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: var(--ui-font-default);
+            transition: all 0.3s ease;
+        }
+
+        .depth-value.highlight {
+            color: var(--ui-primary);
+            transform: scale(1.1);
+        }
+
+        .stack-container {
+            min-height: 150px;
+            display: flex;
+            flex-direction: column-reverse;
+            gap: var(--ui-space-xs);
+        }
+
+        .stack-item {
+            background-color: var(--ui-primary-light);
+            color: var(--ui-primary-dark);
+            padding: var(--ui-space-sm) var(--ui-space-md);
+            border-radius: var(--ui-radius-sm);
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: var(--ui-font-default);
+            font-weight: 500;
+            text-align: center;
+            animation: slideIn 0.5s ease;
+            border: 1px solid var(--ui-primary);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+        }
+
+        .stack-item-value {
+            font-size: var(--ui-font-title);
+            font-weight: 500;
+            flex: 1;
+        }
+
+        .stack-item-position {
+            background-color: var(--ui-primary);
+            color: white;
+            padding: 2px 8px;
+            border-radius: var(--ui-radius-sm);
+            font-size: var(--ui-font-min);
+            font-weight: 400;
+            margin-left: var(--ui-space-sm);
+        }
+
+        .stack-item-position.top { background-color: var(--ui-success); }
+        .stack-item-position.bottom { background-color: var(--ui-info); }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes slideOut {
+            from { opacity: 1; transform: translateY(0); }
+            to { opacity: 0; transform: translateY(-20px); }
+        }
+
+        @keyframes highlight {
+            0%, 100% { background-color: var(--ui-bg-card); }
+            50% { background-color: var(--ui-primary-light); }
+        }
+
+        .local-variable-container {
+            display: flex;
+            flex-direction: column;
+            gap: var(--ui-space-sm);
+        }
+
+        .local-variable-item {
+            padding: var(--ui-space-sm) var(--ui-space-md);
+            background-color: var(--ui-bg-card);
+            border-radius: var(--ui-radius-sm);
+            border: 1px solid var(--ui-border);
+            transition: all 0.3s ease;
+        }
+
+        .local-variable-item.active {
+            border-color: var(--ui-primary);
+            background-color: var(--ui-primary-light);
+        }
+
+        .local-variable-item.uninitialized { opacity: 0.6; }
+
+        .var-header {
+            display: flex;
+            align-items: center;
+            gap: var(--ui-space-sm);
+            margin-bottom: var(--ui-space-xs);
+        }
+
+        .var-body {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: var(--ui-space-sm);
+        }
+
+        .local-variable-item .var-index {
+            color: var(--ui-text-aux);
+            font-size: var(--ui-font-min);
+            min-width: 50px;
+        }
+
+        .local-variable-item .var-name {
+            color: var(--ui-text-title);
+            font-weight: 500;
+            min-width: 40px;
+        }
+
+        .local-variable-item .var-type {
+            color: var(--ui-info);
+            font-size: var(--ui-font-min);
+            font-family: 'Consolas', 'Monaco', monospace;
+            background-color: var(--ui-bg-page);
+            padding: 2px 6px;
+            border-radius: var(--ui-radius-sm);
+            border: 1px solid var(--ui-border);
+        }
+
+        .local-variable-item .var-value {
+            font-family: 'Consolas', 'Monaco', monospace;
+            color: var(--ui-primary-dark);
+            font-weight: 500;
+            background-color: var(--ui-bg-page);
+            padding: var(--ui-space-xs) var(--ui-space-sm);
+            border-radius: var(--ui-radius-sm);
+            font-size: var(--ui-font-default);
+        }
+
+        .local-variable-item .var-scope {
+            color: var(--ui-text-aux);
+            font-size: var(--ui-font-min);
+        }
+
+        .control-panel {
+            background-color: var(--ui-bg-card);
+            padding: var(--ui-space-lg);
+            border-radius: var(--ui-radius-md);
+            box-shadow: var(--ui-shadow-md);
+            margin-bottom: var(--ui-space-xl);
+        }
+
+        .control-panel h2 {
+            font-size: var(--ui-font-title);
+            color: var(--ui-text-title);
+            font-weight: 500;
+            margin-bottom: var(--ui-space-md);
+        }
+
+        .button-group {
+            display: flex;
+            gap: var(--ui-space-sm);
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: var(--ui-space-sm) var(--ui-space-lg);
+            border: none;
+            border-radius: var(--ui-radius-sm);
+            font-size: var(--ui-font-default);
+            font-family: var(--ui-font-family);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 400;
+        }
+
+        .btn-primary {
+            background-color: var(--ui-primary);
+            color: white;
+        }
+
+        .btn-primary:hover { background-color: var(--ui-primary-dark); }
+        .btn-primary:disabled {
+            background-color: var(--ui-info);
+            cursor: not-allowed;
+        }
+
+        .btn-default {
+            background-color: var(--ui-bg-page);
+            color: var(--ui-text-default);
+            border: 1px solid var(--ui-border);
+        }
+
+        .btn-default:hover { background-color: var(--ui-border); }
+
+        .btn-success {
+            background-color: var(--ui-success);
+            color: white;
+        }
+
+        .btn-success:hover { background-color: #4fa867; }
+
+        .btn-warning {
+            background-color: var(--ui-warning);
+            color: white;
+        }
+
+        .btn-warning:hover { background-color: #e5a600; }
+
+        .explanation-panel {
+            background-color: var(--ui-bg-card);
+            padding: var(--ui-space-lg);
+            border-radius: var(--ui-radius-md);
+            box-shadow: var(--ui-shadow-md);
+        }
+
+        .explanation-panel h2 {
+            font-size: var(--ui-font-title);
+            color: var(--ui-text-title);
+            font-weight: 500;
+            margin-bottom: var(--ui-space-md);
+        }
+
+        .explanation-content {
+            background-color: var(--ui-primary-light);
+            padding: var(--ui-space-md);
+            border-radius: var(--ui-radius-sm);
+            border-left: 3px solid var(--ui-primary);
+            color: var(--ui-text-default);
+            line-height: 1.8;
+            min-height: 80px;
+        }
+
+        .explanation-content .step-number {
+            color: var(--ui-primary-dark);
+            font-weight: 500;
+        }
+
+        .explanation-content .instruction-name {
+            color: var(--ui-primary-dark);
+            font-weight: 500;
+            font-family: 'Consolas', 'Monaco', monospace;
+        }
+
+        .explanation-content .highlight {
+            background-color: #fff;
+            padding: 2px 6px;
+            border-radius: var(--ui-radius-sm);
+            font-family: 'Consolas', 'Monaco', monospace;
+            color: var(--ui-primary-dark);
+        }
+
+        .explanation-content .success-text {
+            color: var(--ui-success);
+            font-weight: 500;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 4px;
+            background-color: var(--ui-border);
+            border-radius: var(--ui-radius-sm);
+            margin-top: var(--ui-space-md);
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background-color: var(--ui-primary);
+            transition: width 0.3s ease;
+            border-radius: var(--ui-radius-sm);
+        }
+
+        .status-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: var(--ui-space-sm);
+            color: var(--ui-text-aux);
+            font-size: var(--ui-font-min);
+        }
+
+        .keyboard-shortcuts {
+            margin-top: var(--ui-space-md);
+            padding: var(--ui-space-sm) var(--ui-space-md);
+            background-color: var(--ui-bg-page);
+            border-radius: var(--ui-radius-sm);
+            border: 1px solid var(--ui-border);
+        }
+
+        .shortcut-title {
+            color: var(--ui-text-default);
+            font-size: var(--ui-font-min);
+            font-weight: 500;
+            margin-bottom: var(--ui-space-sm);
+        }
+
+        .shortcut-list {
+            display: flex;
+            gap: var(--ui-space-md);
+            flex-wrap: wrap;
+        }
+
+        .shortcut-item {
+            display: flex;
+            align-items: center;
+            gap: var(--ui-space-xs);
+        }
+
+        .shortcut-key {
+            background-color: var(--ui-primary);
+            color: white;
+            padding: 2px 8px;
+            border-radius: var(--ui-radius-sm);
+            font-size: var(--ui-font-min);
+            font-weight: 500;
+            font-family: 'Consolas', 'Monaco', monospace;
+            min-width: 30px;
+            text-align: center;
+        }
+
+        .shortcut-desc {
+            color: var(--ui-text-aux);
+            font-size: var(--ui-font-min);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>JVM运行时动画解析 - 003</h1>
+            <div class="subtitle">i = ++i 字节码执行过程可视化演示</div>
+        </div>
+
+        <div class="code-section">
+            <h2>Java源代码</h2>
+            <div class="code-block">
+                <span class="keyword">public class</span> <span class="type">Test</span> {<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">public static void</span> <span class="variable">main</span>(<span class="type">String</span>[] <span class="variable">args</span>) {<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">int</span> <span class="variable">i</span> = <span class="number">0</span>;<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="variable">i</span> = ++<span class="variable">i</span>; <span class="comment">// 为什么 i 最终是 1？</span><br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="type">System</span>.<span class="variable">out</span>.<span class="variable">println</span>(<span class="variable">i</span>); <span class="comment">// 输出: 1</span><br>
+                &nbsp;&nbsp;&nbsp;&nbsp;}<br>
+                }
+            </div>
+        </div>
+
+        <div class="control-panel">
+            <h2>操作控制</h2>
+            <div class="button-group">
+                <button class="btn btn-primary" id="btnStart">开始演示</button>
+                <button class="btn btn-success" id="btnNext" disabled>下一步</button>
+                <button class="btn btn-warning" id="btnAuto">自动播放</button>
+                <button class="btn btn-default" id="btnReset">重置</button>
+            </div>
+            <div style="margin-top: var(--ui-space-md);">
+                <label style="color: var(--ui-text-default); font-size: var(--ui-font-default);">播放速度: </label>
+                <input type="range" id="speedSlider" min="500" max="3000" value="1500" style="vertical-align: middle;">
+                <span id="speedValue" style="color: var(--ui-text-aux); font-size: var(--ui-font-min);">1.5s</span>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+            </div>
+            <div class="status-info">
+                <span id="statusText">点击"开始演示"启动</span>
+                <span id="stepCounter">步骤: 0/5</span>
+            </div>
+            <div class="keyboard-shortcuts">
+                <div class="shortcut-title">快捷键:</div>
+                <div class="shortcut-list">
+                    <div class="shortcut-item"><span class="shortcut-key">空格</span><span class="shortcut-desc">下一步</span></div>
+                    <div class="shortcut-item"><span class="shortcut-key">R</span><span class="shortcut-desc">重置</span></div>
+                    <div class="shortcut-item"><span class="shortcut-key">P</span><span class="shortcut-desc">播放/暂停</span></div>
+                    <div class="shortcut-item"><span class="shortcut-key">&rarr;</span><span class="shortcut-desc">前进一步</span></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <div class="panel">
+                <h2>字节码指令</h2>
+                <div class="pc-register-area">
+                    <div class="pc-register-display">
+                        <div class="pc-label">
+                            <div class="pc-icon"></div>
+                            <span>PC 程序计数器</span>
+                        </div>
+                        <div class="pc-value-container">
+                            <div class="pc-value" id="pcValue">-</div>
+                            <div class="pc-description" id="pcDescription">等待执行</div>
+                        </div>
+                    </div>
+                </div>
+
+                <ul class="bytecode-list" id="bytecodeList">
+                    <li class="bytecode-item" data-step="0">
+                        <span class="index">0</span>
+                        <span class="instruction">iconst_0</span>
+                        <span class="instruction-desc">将常量0压入栈</span>
+                    </li>
+                    <li class="bytecode-item" data-step="1">
+                        <span class="index">1</span>
+                        <span class="instruction">istore_1</span>
+                        <span class="instruction-desc">栈顶值存入局部变量1(i)</span>
+                    </li>
+                    <li class="bytecode-item" data-step="2">
+                        <span class="index">2</span>
+                        <span class="instruction">iinc 1 by 1</span>
+                        <span class="instruction-desc">局部变量1(i)自增1</span>
+                    </li>
+                    <li class="bytecode-item" data-step="3">
+                        <span class="index">5</span>
+                        <span class="instruction">iload_1</span>
+                        <span class="instruction-desc">局部变量1(i)加载到栈</span>
+                    </li>
+                    <li class="bytecode-item" data-step="4">
+                        <span class="index">6</span>
+                        <span class="instruction">istore_1</span>
+                        <span class="instruction-desc">栈顶值存入局部变量1(i)</span>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="panel">
+                <h2>JVM运行时数据区</h2>
+                <div class="jvm-visualization">
+                    <div class="stack-area">
+                        <div class="area-title">
+                            <div class="icon"></div>
+                            <span>操作数栈 (Operand Stack)</span>
+                            <div class="stack-depth-indicator">
+                                <span class="depth-label">深度:</span>
+                                <span class="depth-value" id="stackDepth">0</span>
+                            </div>
+                        </div>
+                        <div class="stack-container" id="operandStack">
+                            <div class="empty-state">栈为空</div>
+                        </div>
+                    </div>
+
+                    <div class="local-variable-area">
+                        <div class="area-title">
+                            <div class="icon"></div>
+                            局部变量表 (Local Variable Table)
+                        </div>
+                        <div class="local-variable-container" id="localVariableTable">
+                            <div class="local-variable-item" data-index="0">
+                                <div class="var-header">
+                                    <span class="var-index">Slot 0</span>
+                                    <span class="var-name">this</span>
+                                    <span class="var-type">Object</span>
+                                </div>
+                                <div class="var-body">
+                                    <span class="var-value">-</span>
+                                    <span class="var-scope">作用域: 整个方法</span>
+                                </div>
+                            </div>
+                            <div class="local-variable-item" data-index="1">
+                                <div class="var-header">
+                                    <span class="var-index">Slot 1</span>
+                                    <span class="var-name">i</span>
+                                    <span class="var-type">int</span>
+                                </div>
+                                <div class="var-body">
+                                    <span class="var-value">-</span>
+                                    <span class="var-scope">作用域: 整个方法</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="explanation-panel">
+            <h2>执行说明</h2>
+            <div class="explanation-content" id="explanationContent">
+                点击"开始演示"按钮，将逐步展示 <span class="highlight">i = ++i</span> 字节码指令的执行过程。注意 <span class="highlight">++i</span> 与 <span class="highlight">i++</span> 的关键区别：先自增再加载，最终 i = 1。
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentStep = -1;
+        let isRunning = false;
+        let autoPlayTimer = null;
+        let animationSpeed = 1500;
+
+        const btnStart = document.getElementById('btnStart');
+        const btnNext = document.getElementById('btnNext');
+        const btnAuto = document.getElementById('btnAuto');
+        const btnReset = document.getElementById('btnReset');
+        const bytecodeList = document.getElementById('bytecodeList');
+        const operandStack = document.getElementById('operandStack');
+        const localVariableTable = document.getElementById('localVariableTable');
+        const explanationContent = document.getElementById('explanationContent');
+        const progressFill = document.getElementById('progressFill');
+        const statusText = document.getElementById('statusText');
+        const stepCounter = document.getElementById('stepCounter');
+        const speedSlider = document.getElementById('speedSlider');
+        const speedValue = document.getElementById('speedValue');
+        const pcValue = document.getElementById('pcValue');
+        const pcDescription = document.getElementById('pcDescription');
+        const pcRegisterDisplay = document.querySelector('.pc-register-display');
+        const stackDepth = document.getElementById('stackDepth');
+
+        let stackData = [];
+
+        let localVarData = {
+            0: { name: 'this', value: '-', type: 'Object', scope: '整个方法' },
+            1: { name: 'i', value: '-', type: 'int', scope: '整个方法' }
+        };
+
+        // 字节码偏移量映射（注意：iinc占用3字节，所以PC从2跳到5）
+        const pcOffsets = [0, 1, 2, 5, 6];
+
+        const explanations = [
+            {
+                title: 'iconst_0',
+                content: '将常量 <span class="highlight">0</span> 压入操作数栈顶。<br><br>操作：常量0 &rarr; 操作数栈'
+            },
+            {
+                title: 'istore_1',
+                content: '将操作数栈顶的值(0)弹出，存储到局部变量表的 <span class="highlight">Slot 1</span>（变量i）。<br><br>操作：操作数栈 &rarr; 局部变量表[i]<br>此时 i = 0'
+            },
+            {
+                title: 'iinc 1 by 1',
+                content: '<span class="success-text">关键步骤！</span> <span class="highlight">iinc</span> 指令直接在局部变量表的 Slot 1 上加 1。<br><br><span class="highlight">注意</span>：这个操作<span class="success-text">不经过操作数栈</span>！<br>局部变量 i 从 0 变成 <span class="highlight">1</span>，操作数栈仍为空。'
+            },
+            {
+                title: 'iload_1',
+                content: '将局部变量表 <span class="highlight">Slot 1</span> 的值（i=1）加载到操作数栈顶。<br><br>操作：局部变量表[i] &rarr; 操作数栈<br>此时栈顶 = <span class="success-text">1</span>（新值）'
+            },
+            {
+                title: 'istore_1',
+                content: '将操作数栈顶的值(<span class="highlight">1</span>)弹出，存入局部变量表的 Slot 1。<br><br><span class="success-text">成功！</span><br>栈顶的新值 1 被赋值给局部变量 i。<br><br>最终 i = <span class="success-text">1</span>，自增效果保留！'
+            }
+        ];
+
+        function pushToStack(value) {
+            const emptyState = operandStack.querySelector('.empty-state');
+            if (emptyState) emptyState.remove();
+
+            const stackItem = document.createElement('div');
+            stackItem.className = 'stack-item';
+
+            const valueSpan = document.createElement('span');
+            valueSpan.className = 'stack-item-value';
+            valueSpan.textContent = value;
+            stackItem.appendChild(valueSpan);
+
+            const positionSpan = document.createElement('span');
+            positionSpan.className = 'stack-item-position';
+            stackItem.appendChild(positionSpan);
+
+            operandStack.appendChild(stackItem);
+            updateStackPositions();
+            updateStackDepth();
+        }
+
+        function popFromStack() {
+            const lastItem = operandStack.lastElementChild;
+            if (lastItem && !lastItem.classList.contains('empty-state')) {
+                lastItem.style.animation = 'slideOut 0.3s ease forwards';
+                setTimeout(() => {
+                    lastItem.remove();
+                    if (operandStack.children.length === 0) {
+                        operandStack.innerHTML = '<div class="empty-state">栈为空</div>';
+                    } else {
+                        updateStackPositions();
+                    }
+                    updateStackDepth();
+                }, 300);
+            }
+        }
+
+        function clearStack() {
+            operandStack.innerHTML = '<div class="empty-state">栈为空</div>';
+            updateStackDepth();
+        }
+
+        function updateStackPositions() {
+            const stackItems = operandStack.querySelectorAll('.stack-item');
+            const totalItems = stackItems.length;
+            stackItems.forEach((item, index) => {
+                const positionSpan = item.querySelector('.stack-item-position');
+                if (positionSpan) {
+                    const stackPosition = index + 1;
+                    positionSpan.classList.remove('top', 'bottom');
+                    if (index === totalItems - 1) {
+                        positionSpan.textContent = '栈顶';
+                        positionSpan.classList.add('top');
+                    } else if (index === 0) {
+                        positionSpan.textContent = '栈底';
+                        positionSpan.classList.add('bottom');
+                    } else {
+                        positionSpan.textContent = `位置${stackPosition}`;
+                    }
+                }
+            });
+        }
+
+        function updateStackDepth() {
+            const currentDepth = stackData.length;
+            stackDepth.textContent = currentDepth;
+            stackDepth.classList.add('highlight');
+            setTimeout(() => stackDepth.classList.remove('highlight'), 300);
+        }
+
+        function updateLocalVarDisplay() {
+            Object.keys(localVarData).forEach(index => {
+                const item = localVariableTable.querySelector(`[data-index="${index}"]`);
+                if (item) {
+                    const varData = localVarData[index];
+                    const valueSpan = item.querySelector('.var-value');
+                    const newValue = varData.value;
+
+                    if (valueSpan.textContent !== String(newValue)) {
+                        valueSpan.textContent = newValue;
+                        if (newValue !== '-') {
+                            item.classList.add('active');
+                            item.classList.remove('uninitialized');
+                            item.style.animation = 'none';
+                            item.offsetHeight;
+                            item.style.animation = 'highlight 0.5s ease';
+                        } else {
+                            item.classList.remove('active');
+                            item.classList.add('uninitialized');
+                        }
+                    }
+
+                    const typeSpan = item.querySelector('.var-type');
+                    if (typeSpan && typeSpan.textContent !== varData.type) {
+                        typeSpan.textContent = varData.type;
+                    }
+
+                    const scopeSpan = item.querySelector('.var-scope');
+                    if (scopeSpan && scopeSpan.textContent !== `作用域: ${varData.scope}`) {
+                        scopeSpan.textContent = `作用域: ${varData.scope}`;
+                    }
+                }
+            });
+        }
+
+        function updatePCRegister() {
+            if (currentStep >= 0 && currentStep < explanations.length) {
+                const pcOffset = pcOffsets[currentStep];
+                const instruction = explanations[currentStep].title;
+                pcValue.textContent = pcOffset;
+                pcDescription.textContent = `执行: ${instruction}`;
+                pcValue.classList.add('highlight');
+                pcRegisterDisplay.classList.add('active');
+                setTimeout(() => {
+                    pcValue.classList.remove('highlight');
+                    pcRegisterDisplay.classList.remove('active');
+                }, 500);
+            } else if (currentStep >= explanations.length) {
+                pcValue.textContent = '-';
+                pcDescription.textContent = '执行完成';
+            } else {
+                pcValue.textContent = '-';
+                pcDescription.textContent = '等待执行';
+            }
+        }
+
+        function updateBytecodeHighlight() {
+            const items = bytecodeList.querySelectorAll('.bytecode-item');
+            items.forEach((item, idx) => {
+                item.classList.remove('active', 'executed');
+                if (idx < currentStep) {
+                    item.classList.add('executed');
+                } else if (idx === currentStep) {
+                    item.classList.add('active');
+                }
+            });
+        }
+
+        function updateExplanation() {
+            if (currentStep >= 0 && currentStep < explanations.length) {
+                const exp = explanations[currentStep];
+                explanationContent.innerHTML = `
+                    <div class="step-number">步骤 ${currentStep + 1}/${explanations.length}</div>
+                    <div class="instruction-name">${exp.title}</div>
+                    <div style="margin-top: 8px;">${exp.content}</div>
+                `;
+            }
+        }
+
+        function updateProgress() {
+            const progress = ((currentStep + 1) / explanations.length) * 100;
+            progressFill.style.width = `${progress}%`;
+            stepCounter.textContent = `步骤: ${Math.max(0, currentStep + 1)}/${explanations.length}`;
+        }
+
+        function executeStep() {
+            currentStep++;
+
+            if (currentStep >= explanations.length) {
+                stopAutoPlay();
+                statusText.textContent = '演示完成！';
+                btnNext.disabled = true;
+                btnStart.disabled = true;
+                return;
+            }
+
+            switch (currentStep) {
+                case 0: // iconst_0
+                    stackData.push(0);
+                    pushToStack(0);
+                    statusText.textContent = '执行 iconst_0: 将常量0压入栈';
+                    break;
+                case 1: // istore_1
+                    const val1 = stackData.pop();
+                    localVarData[1].value = val1;
+                    popFromStack();
+                    statusText.textContent = '执行 istore_1: 将栈顶值(0)存入变量i';
+                    break;
+                case 2: // iinc 1 by 1
+                    // iinc直接在局部变量上操作，不经过栈
+                    const oldVal = localVarData[1].value;
+                    localVarData[1].value = oldVal + 1;
+                    updateLocalVarDisplay();
+                    statusText.textContent = '执行 iinc 1 by 1: 变量i自增1 (0→1)，不经过栈！';
+                    break;
+                case 3: // iload_1
+                    stackData.push(localVarData[1].value);
+                    pushToStack(localVarData[1].value);
+                    statusText.textContent = '执行 iload_1: 将变量i(1)加载到栈';
+                    break;
+                case 4: // istore_1
+                    const val4 = stackData.pop();
+                    localVarData[1].value = val4;
+                    popFromStack();
+                    statusText.textContent = '执行 istore_1: 栈顶新值(1)赋给变量i→最终i=1';
+                    break;
+            }
+
+            updatePCRegister();
+            updateLocalVarDisplay();
+            updateBytecodeHighlight();
+            updateExplanation();
+            updateProgress();
+        }
+
+        function startDemo() {
+            isRunning = true;
+            btnStart.disabled = true;
+            btnNext.disabled = false;
+            statusText.textContent = '演示已启动，点击"下一步"继续';
+            executeStep();
+        }
+
+        function startAutoPlay() {
+            if (autoPlayTimer) {
+                stopAutoPlay();
+                return;
+            }
+
+            if (currentStep < 0) {
+                startDemo();
+            }
+
+            btnAuto.textContent = '停止播放';
+            btnNext.disabled = true;
+
+            autoPlayTimer = setInterval(() => {
+                if (currentStep < explanations.length - 1) {
+                    executeStep();
+                } else {
+                    stopAutoPlay();
+                }
+            }, animationSpeed);
+        }
+
+        function stopAutoPlay() {
+            if (autoPlayTimer) {
+                clearInterval(autoPlayTimer);
+                autoPlayTimer = null;
+                btnAuto.textContent = '自动播放';
+                if (currentStep < explanations.length - 1) {
+                    btnNext.disabled = false;
+                }
+            }
+        }
+
+        function reset() {
+            stopAutoPlay();
+            currentStep = -1;
+            isRunning = false;
+            stackData = [];
+            localVarData = {
+                0: { name: 'this', value: '-', type: 'Object', scope: '整个方法' },
+                1: { name: 'i', value: '-', type: 'int', scope: '整个方法' }
+            };
+
+            btnStart.disabled = false;
+            btnNext.disabled = true;
+
+            updatePCRegister();
+            clearStack();
+            updateLocalVarDisplay();
+            updateBytecodeHighlight();
+
+            const items = bytecodeList.querySelectorAll('.bytecode-item');
+            items.forEach(item => {
+                item.classList.remove('active', 'executed');
+            });
+
+            progressFill.style.width = '0%';
+            statusText.textContent = '点击"开始演示"启动';
+            stepCounter.textContent = '步骤: 0/5';
+            explanationContent.innerHTML = '点击"开始演示"按钮，将逐步展示 <span class="highlight">i = ++i</span> 字节码指令的执行过程。注意 <span class="highlight">++i</span> 与 <span class="highlight">i++</span> 的关键区别：先自增再加载，最终 i = 1。';
+        }
+
+        function jumpToStep(targetStep) {
+            stopAutoPlay();
+            currentStep = -1;
+            isRunning = false;
+            stackData = [];
+            localVarData = {
+                0: { name: 'this', value: '-', type: 'Object', scope: '整个方法' },
+                1: { name: 'i', value: '-', type: 'int', scope: '整个方法' }
+            };
+
+            clearStack();
+            updateLocalVarDisplay();
+
+            isRunning = true;
+            btnStart.disabled = true;
+
+            for (let i = 0; i <= targetStep; i++) {
+                currentStep = i;
+
+                switch (i) {
+                    case 0:
+                        stackData.push(0);
+                        const stackItem0 = document.createElement('div');
+                        stackItem0.className = 'stack-item';
+                        const valueSpan0 = document.createElement('span');
+                        valueSpan0.className = 'stack-item-value';
+                        valueSpan0.textContent = 0;
+                        stackItem0.appendChild(valueSpan0);
+                        const positionSpan0 = document.createElement('span');
+                        positionSpan0.className = 'stack-item-position';
+                        stackItem0.appendChild(positionSpan0);
+                        operandStack.appendChild(stackItem0);
+                        break;
+                    case 1:
+                        const val1 = stackData.pop();
+                        localVarData[1].value = val1;
+                        const lastItem1 = operandStack.lastElementChild;
+                        if (lastItem1) lastItem1.remove();
+                        break;
+                    case 2:
+                        const oldVal = localVarData[1].value;
+                        localVarData[1].value = oldVal + 1;
+                        break;
+                    case 3:
+                        stackData.push(localVarData[1].value);
+                        const stackItem3 = document.createElement('div');
+                        stackItem3.className = 'stack-item';
+                        const valueSpan3 = document.createElement('span');
+                        valueSpan3.className = 'stack-item-value';
+                        valueSpan3.textContent = localVarData[1].value;
+                        stackItem3.appendChild(valueSpan3);
+                        const positionSpan3 = document.createElement('span');
+                        positionSpan3.className = 'stack-item-position';
+                        stackItem3.appendChild(positionSpan3);
+                        operandStack.appendChild(stackItem3);
+                        break;
+                    case 4:
+                        const val4 = stackData.pop();
+                        localVarData[1].value = val4;
+                        const lastItem4 = operandStack.lastElementChild;
+                        if (lastItem4) lastItem4.remove();
+                        break;
+                }
+            }
+
+            updateStackPositions();
+
+            if (operandStack.children.length === 0) {
+                operandStack.innerHTML = '<div class="empty-state">栈为空</div>';
+            }
+
+            updatePCRegister();
+            updateLocalVarDisplay();
+            updateBytecodeHighlight();
+            updateExplanation();
+            updateProgress();
+            updateStackDepth();
+
+            if (currentStep >= explanations.length - 1) {
+                btnNext.disabled = true;
+                statusText.textContent = '演示完成！';
+            } else {
+                btnNext.disabled = false;
+                statusText.textContent = `已跳转到步骤 ${currentStep + 1}/${explanations.length}`;
+            }
+        }
+
+        // 事件绑定
+        btnStart.addEventListener('click', startDemo);
+        btnNext.addEventListener('click', executeStep);
+        btnAuto.addEventListener('click', startAutoPlay);
+        btnReset.addEventListener('click', reset);
+
+        speedSlider.addEventListener('input', (e) => {
+            animationSpeed = parseInt(e.target.value);
+            speedValue.textContent = (animationSpeed / 1000).toFixed(1) + 's';
+            if (autoPlayTimer) {
+                stopAutoPlay();
+                startAutoPlay();
+            }
+        });
+
+        bytecodeList.addEventListener('click', (e) => {
+            const targetItem = e.target.closest('.bytecode-item');
+            if (targetItem) {
+                const stepIndex = parseInt(targetItem.getAttribute('data-step'));
+                if (stepIndex >= 0 && stepIndex < explanations.length) {
+                    jumpToStep(stepIndex);
+                }
+            }
+        });
+
+        document.addEventListener('keydown', (e) => {
+            if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
+                return;
+            }
+
+            switch (e.key) {
+                case ' ':
+                    e.preventDefault();
+                    if (isRunning && !btnNext.disabled) {
+                        executeStep();
+                    } else if (!isRunning) {
+                        startDemo();
+                    }
+                    break;
+                case 'r':
+                case 'R':
+                    e.preventDefault();
+                    reset();
+                    break;
+                case 'p':
+                case 'P':
+                    e.preventDefault();
+                    if (autoPlayTimer) {
+                        stopAutoPlay();
+                    } else {
+                        if (currentStep < 0) {
+                            startDemo();
+                        }
+                        startAutoPlay();
+                    }
+                    break;
+                case 'ArrowRight':
+                    e.preventDefault();
+                    if (isRunning && !btnNext.disabled) {
+                        executeStep();
+                    }
+                    break;
+                case 'ArrowLeft':
+                    e.preventDefault();
+                    break;
+            }
+        });
+
+        updatePCRegister();
+        clearStack();
+        updateLocalVarDisplay();
+    </script>
+</body>
+</html>
