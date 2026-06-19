@@ -24,6 +24,13 @@ export default sidebar({
             link: "/other/",
             children: "structure",
         },
+        {
+            text: "学习笔记",
+            icon: "iconamoon:apps-thin",
+            prefix: "study-notes/",
+            link: "/study-notes/",
+            children: "structure",
+        },
         "intro",
     ],
 });
