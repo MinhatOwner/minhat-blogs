@@ -37,10 +37,6 @@ export default hopeTheme({
             Bitbucket: "https://example.com",
             Dingding: "https://example.com",
             Discord: "https://example.com",
-            VuePressThemeHope: {
-                icon: "https://theme-hope-assets.vuejs.press/logo.svg",
-                link: "https://theme-hope.vuejs.press",
-            },
         },
     },
     // 加密配置

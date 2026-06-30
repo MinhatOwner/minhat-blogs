@@ -5,6 +5,8 @@ layout: Blog
 icon: house
 title: 博客主页
 heroImage: /logo-white.svg
+# 设置背景图片
+bgImage: /default.jpg
 # 设置主标题
 heroText: Minhat 博客
 heroFullScreen: true
