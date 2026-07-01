@@ -6,7 +6,7 @@ shortTitle: Linux命令
 # 文章描述
 description: 文章描述
 # 页面图标 (FontClass 或图片路径)
-icon: mi:document
+icon: basil:document-solid
 # 作者，设为 false 可隐藏
 author: Minhat
 # 是否原创

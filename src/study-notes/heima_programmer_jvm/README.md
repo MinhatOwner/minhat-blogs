@@ -1,7 +1,7 @@
 ---
 title: 黑马程序员JVM虚拟机入门到实战全套视频教程
 index: false
-icon: iconamoon:apps-thin
+icon: eos-icons:virtual-guest
 category:
   - 使用指南
 ---

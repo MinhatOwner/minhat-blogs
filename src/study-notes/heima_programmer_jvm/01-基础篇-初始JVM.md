@@ -1,7 +1,7 @@
 ---
 title: 01-基础篇-初始JVM
 description: 文章描述
-icon: mi:document
+icon: basil:document-solid
 author: Minhat
 isOriginal: true
 date: 2026-06-14

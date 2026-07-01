@@ -1,7 +1,7 @@
 ---
 title: 其它
 index: false
-icon: iconamoon:apps-thin
+icon: tdesign:app-filled
 category:
   - 使用指南
 ---
