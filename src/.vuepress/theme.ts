@@ -26,7 +26,7 @@ export default hopeTheme({
         // 博主姓名
         name: "Minhat",
         // 口号、座右铭或介绍语。
-        description: "人生就像蒲公英，看起来自由，却身不由己！",
+        description: "人生就像蒲公英<br/>看起来自由，却身不由己！",
         // 博主的个人介绍地址
         intro: "/intro.html",
         // 博主的媒体链接配置

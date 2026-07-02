@@ -11,7 +11,7 @@ export default sidebar({
             children: "structure",
         },
         {
-            text: "AI",
+            text: "人工智能",
             icon: "tdesign:ai-1-filled",
             prefix: "ai/",
             link: "/ai/",
