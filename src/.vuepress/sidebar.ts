@@ -4,10 +4,17 @@ export default sidebar({
     "/": [
         "",
         {
-            text: "操作系统",
-            icon: "tdesign:system-code-filled",
-            prefix: "os/",
-            link: "/os/",
+            text: "Java",
+            icon: "ri:java-fill",
+            prefix: "java/",
+            link: "/java/",
+            children: "structure",
+        },
+        {
+            text: "服务器",
+            icon: "solar:server-bold",
+            prefix: "server/",
+            link: "/server/",
             children: "structure",
         },
         {
@@ -15,13 +22,6 @@ export default sidebar({
             icon: "tdesign:ai-1-filled",
             prefix: "ai/",
             link: "/ai/",
-            children: "structure",
-        },
-        {
-            text: "学习笔记",
-            icon: "tabler:book-filled",
-            prefix: "study/",
-            link: "/study/",
             children: "structure",
         },
         {

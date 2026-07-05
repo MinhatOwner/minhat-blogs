@@ -2,9 +2,9 @@ import {navbar} from "vuepress-theme-hope";
 
 export default navbar([
     "/",
-    "/os/",
+    "/java/",
+    "/server/",
     "/ai/",
-    "/study/",
     "/other/",
     {
         text: "推荐网站",

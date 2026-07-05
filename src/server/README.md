@@ -1,7 +1,7 @@
 ---
-title: 学习笔记
+title: 服务器
 index: false
-icon: tabler:book-filled
+icon: solar:server-bold
 category:
   - 使用指南
 ---
