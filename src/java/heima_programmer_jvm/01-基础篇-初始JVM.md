@@ -10,8 +10,7 @@ category:
 tag:
   - JVM
 ---
-
-这是文章摘要
+JVM（Java虚拟机）是一个运行在计算机上的程序，负责解释和执行Java字节码文件。其核心功能包括：实时解释字节码为机器码、自动管理内存（分配与垃圾回收）以及通过即时编译（JIT）优化热点代码，提升执行效率。JVM通过“一次编写，到处运行”实现跨平台。常见的JVM实现包括Oracle HotSpot、OpenJDK HotSpot、GraalVM、Alibaba Dragonwell和Eclipse OpenJ9等，其中HotSpot使用最广泛。
 
 <!-- more -->
 

@@ -3,8 +3,6 @@ import path from 'path';
 import qiniu from 'qiniu';
 
 // 配置七牛云凭证（生产环境建议改用环境变量）
-process.env['QINIU_ACCESS_KEY'] = "2222222222222"
-process.env['QINIU_SECRET_KEY'] = "22222222222"
 process.env['QINIU_BUCKET'] = "minhat-blogs"
 process.env['DIR_PATH'] = "./dist"
 

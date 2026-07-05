@@ -9,11 +9,13 @@
     "docs:clean-dev": "vuepress-vite dev src --clean-cache",
     "docs:dev": "vuepress-vite dev src",
     "docs:update-package": "npx vp-update",
-    "qiniu:oss-sync": "node qiniu.ts"
+    "qiniu:oss-sync": "node qiniu.ts",
+    "article:description": "node article-description.ts"
   },
   "devDependencies": {
     "@vuepress/bundler-vite": "2.0.0-rc.30",
     "mermaid": "^11.15.0",
+    "openai": "^6.45.0",
     "qiniu": "^7.15.2",
     "sass-embedded": "^1.99.0",
     "vue": "^3.5.39",

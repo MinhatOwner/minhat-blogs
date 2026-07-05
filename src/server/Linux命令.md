@@ -20,8 +20,7 @@ category:
 tag:
   - Linux
 ---
-
-主要介绍 Linux 系统中常用的系统命令
+文章介绍了Linux中多个常用工具和命令，包括：使用`upower`查看电池状态；配置`firewalld`防火墙（如区域管理、端口转发）；用`systemctl`管理系统服务；关机重启命令；用户管理（`useradd`、`passwd`、`userdel`、`usermod`、`id`）；音频管理工具`alsamixer`；帮助命令（`man`、`whatis`、`help`、`--help`）；以及软件包管理系统（`apt-get`、`dpkg`、`yum`等）。内容涵盖基本语法和常见用法。
 
 <!-- more -->
 
