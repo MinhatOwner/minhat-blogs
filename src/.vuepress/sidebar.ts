@@ -20,8 +20,8 @@ export default sidebar({
         {
             text: "学习笔记",
             icon: "tabler:book-filled",
-            prefix: "study-notes/",
-            link: "/study-notes/",
+            prefix: "study/",
+            link: "/study/",
             children: "structure",
         },
         {

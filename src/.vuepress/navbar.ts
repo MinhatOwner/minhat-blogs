@@ -4,7 +4,7 @@ export default navbar([
     "/",
     "/os/",
     "/ai/",
-    "/study-notes/",
+    "/study/",
     "/other/",
     {
         text: "推荐网站",
