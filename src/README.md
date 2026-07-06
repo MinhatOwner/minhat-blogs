@@ -11,7 +11,7 @@ bgImage: /default.jpg
 heroText: Minhat 博客
 heroFullScreen: true
 # 置副标题
-tagline: 人生就像蒲公英，看起来自由，却身不由己！
+tagline: 陈年代码无BUG，凡有不妥皆特性！
 projects:
   - icon: folder-open
     name: 项目名称

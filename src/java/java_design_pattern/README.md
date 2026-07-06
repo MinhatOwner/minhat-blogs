@@ -1,5 +1,5 @@
 ---
-title: Java种设计模式
+title: Java设计模式
 index: false
 icon: mdi:design
 category:
