@@ -3,7 +3,8 @@ title: Java
 index: false
 icon: ri:java-fill
 category:
-  - java
+  - JAVA
+date: 2026-07-11
 ---
 
 <Catalog/>

@@ -4,12 +4,11 @@ description: 文章描述
 icon: basil:document-solid
 author: Minhat
 isOriginal: true
-date: 2026-06-14
+date: 2026-07-11
 category:
-  - 工具
+  - OTHER
 tag:
   - IDEA
-  - 工具
 ---
 本文详细列举了IntelliJ IDEA中Mac与Windows系统下的快捷键对照表，涵盖按键含义（如⌘、⌥、⌃等）、代码生成、追踪、高效编辑、重构、工具类操作及常规文件操作等实用快捷键，帮助开发者快速提升编码效率。
 

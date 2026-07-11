@@ -12,10 +12,10 @@ author: Minhat
 # 是否原创
 isOriginal: true
 # 写作日期 YYYY-MM-DD
-date: 2026-06-11
+date: 2026-07-11
 # 分类
 category:
-  - Linux
+  - SERVER
 # 标签
 tag:
   - Linux

@@ -4,11 +4,11 @@ description: 文章描述
 icon: basil:document-solid
 author: Minhat
 isOriginal: true
-date: 2026-06-12
+date: 2026-07-11
 category:
   - AI
 tag:
-  - AI
+  - 工具
 ---
 Spec Kit 是 GitHub 推出的开源工具包，实现**规约驱动开发（SDD）**，让技术规约具备可执行性，直接生成运行程序。它通过 CLI 工具（specify）与 AI 编码 Agent 协作，引导用户从定义项目规范、逐步迭代到自动实施。核心流程包括初始化、创建规约、验证、规划、拆解任务和实施，强调“先明确构建内容和原因，再交由 AI 实现”。支持 Claude Code、GitHub Copilot 等主流 Agent，并配有可扩展的预设和工作流，提升开发效率与规范性。
 
