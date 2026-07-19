@@ -236,6 +236,6 @@ export default hopeTheme({
     },
     // 多语言配置
     metaLocales: {
-        editLink: "在 GitHub 上编辑此页",
+        editLink: "在 Gitee 上编辑此页",
     },
 });
